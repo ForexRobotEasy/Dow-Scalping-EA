@@ -1,0 +1,123 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                  Dow Scalping EA                |
+//|                             Developer: Forex Robot Easy Team    |
+//|                                  www.forexroboteasy.com         |
+//+------------------------------------------------------------------+
+
+// Include necessary libraries
+#include <Trade\Trade.mqh>
+
+// Define input parameters
+input double StopLoss = 50;  // Stop loss level in points
+input double TakeProfit = 100;  // Take profit level in points
+input double LotSize = 0.01;  // Lot size for trading
+input int MaxWaitingPeriod = 5;  // Maximum waiting period in days
+
+// Define global variables
+bool g_TradeOpen = false;  // Flag to track if a trade is open
+datetime g_LastTradeTime;  // Last trade execution time
+
+// Initialize trade object
+CTrade trade;
+
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+    // Set stop loss and take profit levels for the trade
+    trade.SetDeviationInPoints(5);
+    trade.SetStopLoss(StopLoss * _Point);
+    trade.SetTakeProfit(TakeProfit * _Point);
+
+    return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Expert deinitialization function                                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+    // Close any open trades before exiting
+    if (g_TradeOpen)
+        trade.PositionClose(Symbol());
+
+    // Print the reason for deinitialization
+    Print('Dow Scalping EA deinitialized - Reason: ', reason);
+}
+
+//+------------------------------------------------------------------+
+//| Expert start function                                            |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+    // Check if enough time has passed since last trade execution
+    if (TimeCurrent() - g_LastTradeTime < PeriodSeconds(PERIOD_D1))
+        return;
+
+    // Check if a trade is already open
+    if (g_TradeOpen)
+        return;
+
+    // Check if market conditions are suitable for trading
+    if (!IsMarketConditionsSuitable())
+        return;
+
+    // Calculate pivot points
+    double pivotPoints[5];
+    CalculatePivotPoints(pivotPoints);
+
+    // Check if a trade opportunity exists based on pivot points
+    if (!TradeOpportunityExists(pivotPoints))
+        return;
+
+    // Open a trade with appropriate lot size
+    trade.Buy(LotSize);
+
+    // Update trade status and execution time
+    g_TradeOpen = true;
+    g_LastTradeTime = TimeCurrent();
+}
+
+//+------------------------------------------------------------------+
+//| Check if market conditions are suitable for trading              |
+//+------------------------------------------------------------------+
+bool IsMarketConditionsSuitable()
+{
+    // Add your market condition logic here
+
+    return true;
+}
+
+//+------------------------------------------------------------------+
+//| Calculate pivot points                                           |
+//+------------------------------------------------------------------+
+void CalculatePivotPoints(double& pivotPoints[])
+{
+    // Add your pivot point calculation logic here
+    // Store the calculated pivot points in the pivotPoints array
+}
+
+//+------------------------------------------------------------------+
+//| Check if a trade opportunity exists based on pivot points         |
+//+------------------------------------------------------------------+
+bool TradeOpportunityExists(const double& pivotPoints[])
+{
+    // Add your trade opportunity checking logic here
+
+    return true;
+}
+
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
+void OnTrade()
+{
+    // Check if a trade has been closed
+    if (trade.PositionCloseTime() != 0)
+    {
+        // Update trade status
+        g_TradeOpen = false;
+    }
+}
